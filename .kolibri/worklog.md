@@ -15,3 +15,10 @@
 - **Модель:** qwen3.6-colibri
 - **Сделано:** Fix Android build failure by removing unused embed directive and fixing UI logic
 - **Файлы:** `~ main.go`
+
+## 2026-11-17 06:29 UTC — Исправление сборки (попытка 3)
+
+- **Ошибка сборки:** go build -buildmode=c-shared -o /tmp/fyne-work-3546893534/lib/arm64-v8a/libtest_111.so github.com/zigorminsk-debug/test-111 failed: exit status 1
+- **Модель:** qwen3.6-colibri
+- **Сделано:** Fix undefined fyne.App and fyne.Preferences by using local app instance in main
+- **Файлы:** `~ main.go`

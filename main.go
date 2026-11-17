@@ -20,7 +20,6 @@ type Stop struct {
 type StopManager struct {
 	stops   []Stop
 	current time.Time
-	app     fyne.App
 	prefs   fyne.Preferences
 	list    *widget.List
 }
@@ -32,9 +31,8 @@ func NewStopManager() *StopManager {
 	}
 }
 
-func (sm *StopManager) Init() {
-	sm.app = app.New()
-	sm.prefs = sm.app.Preferences()
+func (sm *StopManager) Init(a fyne.App) {
+	sm.prefs = a.Preferences()
 
 	// Load saved stops
 	if savedStops := sm.prefs.StringList("stops"); len(savedStops) > 0 {
@@ -52,8 +50,8 @@ func (sm *StopManager) Init() {
 	}
 }
 
-func (sm *StopManager) CreateUI() fyne.CanvasObject {
-	sm.Init()
+func (sm *StopManager) CreateUI(a fyne.App) fyne.CanvasObject {
+	sm.Init(a)
 
 	title := widget.NewLabelWithStyle("Stop Manager", fyne.TextAlignCenter, fyne.TextStyle{Bold: true})
 	title.Wrapping = fyne.TextWrapWord
@@ -134,7 +132,7 @@ func (sm *StopManager) saveStops() {
 
 	// Show confirmation dialog
 	fyne.Do(func() {
-		dialog.ShowInformation("Saved", "Stops saved successfully!", sm.app.NewWindow())
+		dialog.ShowInformation("Saved", "Stops saved successfully!", nil)
 	})
 }
 
@@ -221,9 +219,10 @@ func parseTime(unixNano string) time.Time {
 }
 
 func main() {
+	a := app.New()
 	sm := NewStopManager()
 
-	w := sm.app.NewWindow("Stop Manager")
-	w.SetContent(sm.CreateUI())
+	w := a.NewWindow("Stop Manager")
+	w.SetContent(sm.CreateUI(a))
 	w.ShowAndRun()
 }
