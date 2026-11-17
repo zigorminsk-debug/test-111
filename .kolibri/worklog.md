@@ -29,3 +29,4 @@
 - **Модель:** qwen3.6-colibri
 - **Сделано:** Fix undefined fyne.App and fyne.Preferences by importing fyne.io/fyne/v2
 - **Файлы:** `~ main.go`
+- **Итог:** сборка прошла — https://github.com/zigorminsk-debug/test-111/actions/runs/44035178034; релиз https://github.com/zigorminsk-debug/test-111/releases/tag/build-4
