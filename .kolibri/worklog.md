@@ -30,3 +30,10 @@
 - **Сделано:** Fix undefined fyne.App and fyne.Preferences by importing fyne.io/fyne/v2
 - **Файлы:** `~ main.go`
 - **Итог:** сборка прошла — https://github.com/zigorminsk-debug/test-111/actions/runs/44035178034; релиз https://github.com/zigorminsk-debug/test-111/releases/tag/build-4
+
+## 2026-11-17 10:45 UTC — Задача
+
+- **Задача:** удали все что добавил
+- **Модель:** qwen3.6-colibri
+- **Сделано:** Удаление файлов проекта
+- **Файлы:** `- README.md`, `- go.mod`, `- main.go`

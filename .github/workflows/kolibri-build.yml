@@ -15,124 +15,19 @@ concurrency:
 
 jobs:
   build:
-    name: Build (${{ matrix.target }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - { target: android, os: ubuntu-latest }
+    name: Build (source)
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-go@v7
-        with:
-          go-version: stable
-          cache: false
-      - name: Install Linux libraries for Fyne
-        if: matrix.target == 'linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends gcc libgl1-mesa-dev libegl1-mesa-dev libwayland-dev libx11-dev libxkbcommon-dev xorg-dev
-      - name: Resolve dependencies
-        run: go mod tidy
       - name: Build
-        if: matrix.target != 'android'
-        shell: bash
-        env:
-          CGO_ENABLED: "1"
         run: |
+          if [ -f Makefile ] || [ -f makefile ]; then make; fi
           mkdir -p dist
-          flags="-s -w"
-          if [ "$RUNNER_OS" = "Windows" ]; then flags="$flags -H=windowsgui"; fi
-          go build -trimpath -ldflags "$flags" -o dist/ ./...
-      # The APK is signed with a debug key: it installs on a phone that allows
-      # apps from unknown sources, but is not fit for Google Play.
-      - name: Build for Android
-        if: matrix.target == 'android'
-        shell: bash
-        env:
-          APP_ID: io.github.zigorminsk_debug.test_111
-          APP_NAME: test-111
-          BUILD: ${{ github.run_number }}
-        run: |
-          sdk="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
-          ndk="${ANDROID_NDK_HOME:-${ANDROID_NDK_LATEST_HOME:-}}"
-          if [ ! -d "$ndk" ] && [ -d "$sdk/ndk" ]; then
-            ndk="$(find "$sdk/ndk" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)"
-          fi
-          if [ ! -d "$sdk" ] || [ ! -d "$ndk" ]; then
-            echo "::error title=Android::The runner has no Android SDK or NDK (ANDROID_HOME, ANDROID_NDK_HOME)."
-            exit 1
-          fi
-          export ANDROID_HOME="$sdk" ANDROID_NDK_HOME="$ndk"
-          go install fyne.io/tools/cmd/fyne@v1.7.4
-
-          # The package needs an icon: the project's own, or a plain one.
-          icon=Icon.png
-          if [ ! -f "$icon" ]; then
-            declared=""
-            if [ -f FyneApp.toml ]; then
-              declared="$(sed -nE 's/^[[:space:]]*Icon[[:space:]]*=[[:space:]]*"([^"]+)".*/\1/p' FyneApp.toml | head -n 1 || true)"
-            fi
-            if [ -n "$declared" ] && [ -f "$declared" ]; then
-              icon="$declared"
-            else
-              mkdir -p "$RUNNER_TEMP/kolibri-icon"
-              cat > "$RUNNER_TEMP/kolibri-icon/main.go" <<'ICON'
-          package main
-
-          import (
-              "image"
-              "image/color"
-              "image/png"
-              "os"
-          )
-
-          func main() {
-              const n = 512
-              dark, light := color.NRGBA{0x12, 0x1A, 0x17, 0xFF}, color.NRGBA{0x34, 0xD8, 0xA2, 0xFF}
-              img := image.NewNRGBA(image.Rect(0, 0, n, n))
-              for y := 0; y < n; y++ {
-                  for x := 0; x < n; x++ {
-                      c := dark
-                      if d := (x-n/2)*(x-n/2) + (y-n/2)*(y-n/2); d < 170*170 && d > 90*90 {
-                          c = light
-                      }
-                      img.SetNRGBA(x, y, c)
-                  }
-              }
-              f, err := os.Create(os.Args[1])
-              if err != nil {
-                  panic(err)
-              }
-              if err := png.Encode(f, img); err != nil {
-                  panic(err)
-              }
-              if err := f.Close(); err != nil {
-                  panic(err)
-              }
-          }
-          ICON
-              (cd "$RUNNER_TEMP/kolibri-icon" && go mod init kolibri-icon >/dev/null 2>&1 && go run . "$GITHUB_WORKSPACE/Icon.png")
-            fi
-          fi
-
-          # The project's own name wins; the identifier is always ours, so
-          # that it is valid for Android whatever the project declares.
-          # 64- and 32-bit ARM cover phones and tablets; the x86 builds are
-          # only for emulators and would double the size of the APK.
-          args=(--os "android/arm64,android/arm" --app-id "$APP_ID" --icon "$icon" --app-version "1.0.$BUILD" --app-build "$BUILD")
-          if [ ! -f FyneApp.toml ] || ! grep -Eq '^[[:space:]]*Name[[:space:]]*=' FyneApp.toml; then
-            args+=(--name "$APP_NAME")
-          fi
-          # Without debug information the package is noticeably smaller.
-          GOFLAGS="-ldflags=-w -trimpath" "$(go env GOPATH)/bin/fyne" package "${args[@]}"
-          mkdir -p dist
-          mv ./*.apk dist/
+          rsync -a --exclude dist --exclude .git --exclude .github ./ dist/
       - name: Upload build
         uses: actions/upload-artifact@v7
         with:
-          name: test-111-${{ matrix.target }}
+          name: test-111-source
           path: dist/
           if-no-files-found: error
 
@@ -143,11 +38,11 @@ jobs:
     steps:
       # Each artifact is fetched by name into a folder of its own: without a
       # name the layout depends on how many artifacts the run has.
-      - name: Download test-111-android
+      - name: Download test-111-source
         uses: actions/download-artifact@v8
         with:
-          name: test-111-android
-          path: artifacts/test-111-android
+          name: test-111-source
+          path: artifacts/test-111-source
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
