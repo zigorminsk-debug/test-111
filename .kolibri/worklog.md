@@ -22,3 +22,10 @@
 - **Модель:** qwen3.6-colibri
 - **Сделано:** Fix undefined fyne.App and fyne.Preferences by using local app instance in main
 - **Файлы:** `~ main.go`
+
+## 2026-11-17 06:58 UTC — Исправление сборки (попытка 4)
+
+- **Ошибка сборки:** go build -buildmode=c-shared -o /tmp/fyne-work-883008222/lib/arm64-v8a/libtest_111.so github.com/zigorminsk-debug/test-111 failed: exit status 1
+- **Модель:** qwen3.6-colibri
+- **Сделано:** Fix undefined fyne.App and fyne.Preferences by importing fyne.io/fyne/v2
+- **Файлы:** `~ main.go`
