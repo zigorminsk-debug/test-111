@@ -1,7 +1,6 @@
 package main
 
 import (
-	"embed"
 	"fmt"
 	"time"
 
@@ -10,9 +9,6 @@ import (
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 )
-
-//go:embed resources
-var resources embed.FS
 
 type Stop struct {
 	ID        string
@@ -26,6 +22,7 @@ type StopManager struct {
 	current time.Time
 	app     fyne.App
 	prefs   fyne.Preferences
+	list    *widget.List
 }
 
 func NewStopManager() *StopManager {
@@ -77,7 +74,7 @@ func (sm *StopManager) CreateUI() fyne.CanvasObject {
 		sm.loadStops()
 	})
 
-	stopList := sm.createStopList()
+	sm.list = sm.createStopList()
 
 	actions := container.NewHBox(startBtn, stopBtn, saveBtn, loadBtn)
 
@@ -85,7 +82,7 @@ func (sm *StopManager) CreateUI() fyne.CanvasObject {
 		title,
 		actions,
 		widget.NewSeparator(),
-		stopList,
+		sm.list,
 	)
 
 	return container.NewScroll(content)

@@ -8,3 +8,10 @@
 - **Модель:** qwen3.6-colibri
 - **Сделано:** Implement Android-compatible Stop Manager app using Go and Fyne v2
 - **Файлы:** `+ go.mod`, `+ main.go`
+
+## 2026-11-17 05:56 UTC — Исправление сборки (попытка 2)
+
+- **Ошибка сборки:** go build -buildmode=c-shared -o /tmp/fyne-work-2376683159/lib/arm64-v8a/libtest_111.so github.com/zigorminsk-debug/test-111 failed: exit status 1
+- **Модель:** qwen3.6-colibri
+- **Сделано:** Fix Android build failure by removing unused embed directive and fixing UI logic
+- **Файлы:** `~ main.go`
